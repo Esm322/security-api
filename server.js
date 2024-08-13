@@ -1,28 +1,78 @@
 const express = require('express');
-// const { nanoid } = require('nanoid');
+const db = require('./db')
+
 const port = process.env.PORT || 3000;
-const sql = require('mssql')
 
 const app = express();
 
-// app.post('/api/task', (req, res) => {
+app.use(express.json());
 
-// });
+app.post('/api/user', async (req, res) => {
+  const { email, fullname, password_user } = req.body;
+
+  const newUser = await db.query('INSERT INTO users(email, fullname, password_user) values ($1, $2, $3) RETURNING *', [email, fullname, password_user]);
+
+  try {
+    res.json(newUser)
+  } catch(err) {
+    console.log(err);
+  }
+});
+
+app.get('/api/users', async (req, res) => {
+  try {
+    console.log(res);
+    res.json('ok')
+  } catch(err) {
+    console.log(err);
+  }
+});
+
+app.get('/api/user/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    console.log(res, id);
+    res.json('ok')
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+app.post('/api/task', async (req, res) => {
+  const { date, coordinates, description } = req.body;
+
+  const newTask = await db.query('INSERT INTO tasks(task_date, coordinates, task_description) values ($1, $2, $3) RETURNING *', [date, coordinates, description]);
+
+  try {
+    res.json(newTask.rows[0]);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+app.get('/api/tasks', async (req, res) => {
+  const tasksData = await db.query('SELECT * FROM tasks');
+
+  try {
+    console.log(tasksData.rows);
+    res.json(tasksData.rows);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+app.get('/api/task/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    console.log(res, id);
+    res.json('ok')
+  } catch (err) {
+    console.log(err);
+  }
+});
 
 app.listen(port, () => {
   console.log(`  Listening on http://localhost:${port}`);
 });
-
-
-(async () => {
-  try {
-    // make sure that any items are correctly URL encoded in the connection string
-    await sql.connect('Server=192.168.1.109,8080;Database=test;User Id=esm;Password=t234;Encrypt=true')
-
-    const result = await sql.query`select * from students`
-
-    console.log(result)
-  } catch (err) {
-    console.log(err)
-  }
-})()
